@@ -1,19 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Globalization;
-using System.Linq;
 
 namespace NumArrayConsoleApp
 {
     class Program
     {
         private static int[,] _numArr = new int[20, 20];
-        private static HashSet<int> _index;
-        private static int _biggestNum = _numArr[0, 0];
-        private static int _smallestNum = _numArr[0, 0];
+        private static int _smallestNum;
         private static int _smallestNumCoordX = 0;
         private static int _smallestNumCoordY = 0;
+        private static int _biggestNum;
         private static int _biggestNumCoordX = 0;
         private static int _biggestNumCoordY = 0;
         private static int _rowLen = _numArr.GetLength(0);
@@ -25,24 +21,18 @@ namespace NumArrayConsoleApp
             DisplayArrayOnScreen(_numArr);
             GetMaxMinNumsAndCoords();
             Console.WriteLine($"\nThe smallest number is {_smallestNum} ({_smallestNumCoordX},{_smallestNumCoordY}) " +
-                              $"and the biggest number: {_biggestNum} ({_biggestNumCoordX},{_biggestNumCoordY})");
-            var newArr = GetSortedByRow(_numArr);
-            DisplayArrayOnScreen(newArr);
-
-
-            //Sort the array in ascending order and display on screen
-
-
-
+                              $"and the biggest number: {_biggestNum} ({_biggestNumCoordX},{_biggestNumCoordY})\n");
+            SortArrayAscending(_numArr);
+            DisplayArrayOnScreen(_numArr);
 
             Console.ReadKey();
         }
 
         static void PopulateArray()
         {
-            for (int i = 0; i < _numArr.GetLength(0); i++)
+            for (int i = 0; i < _rowLen; i++)
             {
-                for (int j = 0; j < _numArr.GetLength(1); j++)
+                for (int j = 0; j < _colLen; j++)
                 {
                     _numArr[i, j] = GetRandomInt();
                 }
@@ -51,8 +41,8 @@ namespace NumArrayConsoleApp
 
         static int GetRandomInt()
         {
-            int nextRandomInt = new Random().Next(0, 400);
-            if (CheckIfExists(nextRandomInt))
+            int nextRandomInt = new Random().Next(0, 800);
+            if (CheckIfNumExists(nextRandomInt))
             {
                 return GetRandomInt();
             }
@@ -60,55 +50,53 @@ namespace NumArrayConsoleApp
             return nextRandomInt;
         }
 
-        static bool CheckIfExists(int randomInt)
+        static bool CheckIfNumExists(int randomInt)
         {
-            if (_index == null)
+            int count = 0;
+
+            for (int i = 0; i < _rowLen; i++)
             {
-                _index = new HashSet<int>();
-                for (int i = 0; i < _numArr.GetLength(0); i++)
+                for (int j = 0; j < _colLen; j++)
                 {
-                    for (int j = 0; j < _numArr.GetLength(1); j++)
+                    if (_numArr[i, j] == randomInt)
                     {
-                        _index.Add(_numArr[i, j]);
+                        count++;
                     }
                 }
             }
 
-            return _index.Contains(randomInt);
+            return count > 0 ? true : false;
         }
 
-        static int[,] GetSortedByRow(int[,] m)
+        static void SortArrayAscending(int[,] data)
         {
-            // loop for rows of matrix
-            for (int i = 0;
-                i < m.GetLength(0);
-                i++)
+            int temp, t, i, j;
+
+            for (t = 1; t < (_rowLen * _colLen); t++)
             {
-
-                // loop for column of matrix
-                for (int j = 0;
-                    j < m.GetLength(1);
-                    j++)
+                for (i = 0; i < _rowLen; i++)
                 {
-
-                    // loop for comparison and swapping
-                    for (int k = 0;
-                        k < m.GetLength(1) - j - 1;
-                        k++)
+                    for (j = 0; j < _colLen - 1; j++)
                     {
-                        if (m[i, k] > m[i, k + 1])
+                        if (data[i, j] > data[i, j + 1])
                         {
-
-                            // swapping of elements
-                            int t = m[i, k];
-                            m[i, k] = m[i, k + 1];
-                            m[i, k + 1] = t;
+                            temp = data[i, j];
+                            data[i, j] = data[i, j + 1];
+                            data[i, j + 1] = temp;
                         }
                     }
                 }
-            }
 
-            return m;
+                for (i = 0; i < _rowLen - 1; i++)
+                {
+                    if (data[i, _colLen - 1] > data[i + 1, 0])
+                    {
+                        temp = data[i, _colLen - 1];
+                        data[i, _colLen - 1] = data[i + 1, 0];
+                        data[i + 1, 0] = temp;
+                    }
+                }
+            }
         }
 
         static void DisplayArrayOnScreen(int[,] numArr)
@@ -127,30 +115,34 @@ namespace NumArrayConsoleApp
                     if (currentNumLen == 3)
                         Console.Write($"{numArr[i, j]} ");
                 }
+
                 Console.WriteLine();
             }
         }
 
         static void GetMaxMinNumsAndCoords()
         {
+            _smallestNum = _numArr[0, 0];
+            _biggestNum = _numArr[0, 0];
+
             for (int i = 0; i < _rowLen; i++)
             {
                 for (int j = 0; j < _colLen; j++)
                 {
                     int currentNum = _numArr[i, j];
 
-                    if (currentNum > _biggestNum)
-                    {
-                        _biggestNum = currentNum;
-                        _biggestNumCoordY = i;
-                        _biggestNumCoordX = j;
-                    }
-
                     if (currentNum < _smallestNum)
                     {
                         _smallestNum = currentNum;
                         _smallestNumCoordY = i;
                         _smallestNumCoordX = j;
+                    }
+
+                    if (currentNum > _biggestNum)
+                    {
+                        _biggestNum = currentNum;
+                        _biggestNumCoordY = i;
+                        _biggestNumCoordX = j;
                     }
                 }
             }
