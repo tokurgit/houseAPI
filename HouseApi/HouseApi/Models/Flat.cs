@@ -13,6 +13,8 @@ namespace HouseApi.Models
         public int RoomCount { get; set; }
         public int ResidentCount { get; set; }
         public int LivingSpace { get; set; }
-        public virtual House HouseResiding { get; set; }
+        public int HouseId { get; set; }
+        public virtual House House { get; set; }
+        public virtual List<Resident> Residents { get; set; }
     }
 }

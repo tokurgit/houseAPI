@@ -42,7 +42,6 @@ namespace HouseApi.Controllers
         }
 
         // PUT: api/Houses/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("Edit/{id}")]
         public async Task<IActionResult> PutHouse(int id, House house)
         {
@@ -61,7 +60,7 @@ namespace HouseApi.Controllers
             {
                 if (!HouseExists(id))
                 {
-                    return NotFound("House with such ID does not exist");
+                    return NotFound("House with such ID {id} does not exist");
                 }
                 else
                 {
@@ -69,11 +68,10 @@ namespace HouseApi.Controllers
                 }
             }
 
-            return Ok($"House with id: {id} is updated");
+            return Ok("House with id: {id} is updated");
         }
 
         // POST: api/Houses
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<House>> PostHouse(House house)
         {
@@ -84,7 +82,6 @@ namespace HouseApi.Controllers
         }
 
         // DELETE: api/Houses/Delete/5
-
         [HttpDelete("Delete/{id}")]
         public async Task<IActionResult> DeleteHouse(int id)
         {

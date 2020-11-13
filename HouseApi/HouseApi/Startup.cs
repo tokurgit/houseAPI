@@ -20,7 +20,7 @@ namespace HouseApi
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<HouseApiDbContext>(
-                opt => opt.UseInMemoryDatabase("HouseDbInformation"));
+                opt => opt.UseSqlServer(Configuration.GetConnectionString("HouseApiDBConnection")));
             services.AddControllers();
         }
 

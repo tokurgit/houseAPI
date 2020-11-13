@@ -14,6 +14,7 @@ namespace HouseApi.Models
         public DateTime? DateOfBirth { get; set; }
         public long PhoneNumber { get; set; }
         public string EMail { get; set; }
-        public virtual Flat FlatResiding { get; set; }
+        public int FlatId { get; set; }
+        public virtual Flat Flat{ get; set; }
     }
 }

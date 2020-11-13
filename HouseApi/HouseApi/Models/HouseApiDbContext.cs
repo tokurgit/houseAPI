@@ -15,5 +15,16 @@ namespace HouseApi.Models
         public DbSet<House> Houses { get; set; }
         public DbSet<Flat> Flats { get; set; }
         public DbSet<Resident> Residents { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<House>()
+                .HasMany(c => c.Flats)
+                .WithOne(e => e.House);
+
+            modelBuilder.Entity<Flat>()
+                .HasMany(c => c.Residents)
+                .WithOne(e => e.Flat);
+        }
     }
 }
