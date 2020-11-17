@@ -1,7 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace HouseApi.Models
 {
@@ -12,7 +11,17 @@ namespace HouseApi.Models
         public string Street { get; set; }
         public string Country { get; set; }
         public string ZipCode { get; set; }
-        public virtual List<Flat> Flats { get; set; }
 
+        [JsonIgnore]
+        public List<Flat> Flats { get; set; }
+
+        public House()
+        {
+        }
+
+        private House(HouseApiDbContext context)
+        {
+            Flats = context.Flats.Where(f => f.HouseId == Id).ToList();
+        }
     }
 }

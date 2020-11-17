@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using HouseApi.Models;
 
 namespace HouseApi.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/Flats")]
     [ApiController]
     public class FlatsController : ControllerBase
     {
@@ -35,7 +33,7 @@ namespace HouseApi.Controllers
 
             if (flat == null)
             {
-                return NotFound();
+                return NotFound($"Flat with ID: {id} is not found");
             }
 
             return flat;
@@ -50,10 +48,13 @@ namespace HouseApi.Controllers
                 return BadRequest("You can only update a Flat with the same ID");
             }
 
-            _context.Entry(flat).State = EntityState.Modified;
-
             try
             {
+                if (IsTheSameFlat(flat))
+                {
+                    return BadRequest("Flat with the same properties already exist");
+                }
+                _context.Entry(flat).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
@@ -68,17 +69,21 @@ namespace HouseApi.Controllers
                 }
             }
 
-            return Ok("House with ID {id} is updated");
+            return Ok($"Flat with ID {id} is updated");
         }
 
         // POST: api/Flats
         [HttpPost]
         public async Task<ActionResult<Flat>> PostFlat(Flat flat)
         {
-            _context.Flats.Add(flat);
-            await _context.SaveChangesAsync();
+            if (!IsTheSameFlat(flat))
+            {
+                await _context.Flats.AddAsync(flat);
+                await _context.SaveChangesAsync();
+                return CreatedAtAction("GetFlat", new { id = flat.Id }, flat);
+            }
 
-            return CreatedAtAction("GetFlat", new { id = flat.Id }, flat);
+            return BadRequest("Flat with the same properties already exist");
         }
 
         // DELETE: api/Flats/5
@@ -88,18 +93,27 @@ namespace HouseApi.Controllers
             var flat = await _context.Flats.FindAsync(id);
             if (flat == null)
             {
-                return NotFound();
+                return NotFound($"Flat with ID: {id} is not found");
             }
 
             _context.Flats.Remove(flat);
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            return Ok($"You have successfully deleted flat with ID: {id}");
         }
 
         private bool FlatExists(int id)
         {
             return _context.Flats.Any(e => e.Id == id);
+        }
+
+        private bool IsTheSameFlat(Flat flat)
+        {
+            return _context.Flats.Any(
+                f =>
+                    f.Floor == flat.Floor &&
+                    f.HouseId == flat.HouseId &&
+                    f.Number == flat.Number);
         }
     }
 }

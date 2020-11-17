@@ -22,6 +22,9 @@ namespace HouseApi
             services.AddDbContext<HouseApiDbContext>(
                 opt => opt.UseSqlServer(Configuration.GetConnectionString("HouseApiDBConnection")));
             services.AddControllers();
+            //services.AddControllers().Newtonsoft AddNewtonsoftJson(options =>
+            //    options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+            //);
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

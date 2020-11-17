@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using HouseApi.Models;
@@ -50,17 +48,21 @@ namespace HouseApi.Controllers
                 return BadRequest("You can only update a house with the same ID");
             }
 
-            _context.Entry(house).State = EntityState.Modified;
-
             try
             {
+                if (IsSameHouse(house))
+                {
+                    return BadRequest("House with the same properties already exist");
+                }
+                _context.Entry(house).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
+
             }
             catch (DbUpdateConcurrencyException)
             {
                 if (!HouseExists(id))
                 {
-                    return NotFound("House with such ID {id} does not exist");
+                    return NotFound($"House with such ID {id} does not exist");
                 }
                 else
                 {
@@ -68,17 +70,21 @@ namespace HouseApi.Controllers
                 }
             }
 
-            return Ok("House with id: {id} is updated");
+            return Ok($"House with id: {id} is updated");
         }
 
         // POST: api/Houses
         [HttpPost]
         public async Task<ActionResult<House>> PostHouse(House house)
         {
-            _context.Houses.Add(house);
-            await _context.SaveChangesAsync();
+            if (!IsSameHouse(house))
+            {
+                _context.Houses.Add(house);
+                await _context.SaveChangesAsync();
+                return CreatedAtAction(nameof(GetHouse), new { id = house.Id }, house);
+            }
+            return BadRequest("House with the same properties already exist");
 
-            return CreatedAtAction(nameof(GetHouse), new { id = house.Id }, house);
         }
 
         // DELETE: api/Houses/Delete/5
@@ -88,18 +94,28 @@ namespace HouseApi.Controllers
             var house = await _context.Houses.FindAsync(id);
             if (house == null)
             {
-                return NotFound();
+                return NotFound($"House with ID {id} is not found");
             }
 
             _context.Houses.Remove(house);
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            return Ok($"You have successfully deleted house with ID: {id}");
         }
 
         private bool HouseExists(int id)
         {
             return _context.Houses.Any(e => e.Id == id);
+        }
+
+        private bool IsSameHouse(House house)
+        {
+            return _context.Houses.Any
+            (e =>
+                    e.Number == house.Number &&
+                    e.Street == house.Street &&
+                    e.ZipCode == house.ZipCode &&
+                    e.Country == house.Country);
         }
     }
 }

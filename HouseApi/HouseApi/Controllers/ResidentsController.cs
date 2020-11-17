@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using HouseApi.Models;
@@ -35,7 +33,7 @@ namespace HouseApi.Controllers
 
             if (resident == null)
             {
-                return NotFound();
+                return NotFound($"Resident with ID {id} is not found");
             }
 
             return resident;
@@ -50,17 +48,20 @@ namespace HouseApi.Controllers
                 return BadRequest("You can only update a resident with the same ID");
             }
 
-            _context.Entry(resident).State = EntityState.Modified;
-
             try
             {
+                if (IsTheSameResident(resident))
+                {
+                    return BadRequest("Resident with the same properties already exist");
+                }
+                _context.Entry(resident).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
             {
                 if (!ResidentExists(id))
                 {
-                    return NotFound("Resident with such id {id} does not exist");
+                    return NotFound($"Resident with such id {id} does not exist");
                 }
                 else
                 {
@@ -68,17 +69,21 @@ namespace HouseApi.Controllers
                 }
             }
 
-            return Ok("Resident with ID {id} is updated");
+            return Ok($"Resident with ID {id} is updated");
         }
 
         // POST: api/Residents
         [HttpPost]
         public async Task<ActionResult<Resident>> PostResident(Resident resident)
         {
-            _context.Residents.Add(resident);
-            await _context.SaveChangesAsync();
+            if (!IsTheSameResident(resident))
+            {
+                _context.Residents.Add(resident);
+                await _context.SaveChangesAsync();
+                return CreatedAtAction("GetResident", new { id = resident.Id }, resident);
+            }
 
-            return CreatedAtAction("GetResident", new { id = resident.Id }, resident);
+            return BadRequest("Resident with the same properties already exist");
         }
 
         // DELETE: api/Residents/5
@@ -88,18 +93,29 @@ namespace HouseApi.Controllers
             var resident = await _context.Residents.FindAsync(id);
             if (resident == null)
             {
-                return NotFound();
+                return NotFound($"Resident with ID: {id} is not found");
             }
 
             _context.Residents.Remove(resident);
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            return Ok($"You have successfully deleted resident with ID: {id}");
         }
 
         private bool ResidentExists(int id)
         {
             return _context.Residents.Any(e => e.Id == id);
+        }
+
+        private bool IsTheSameResident(Resident res)
+        {
+            return _context.Residents.Any
+            (r =>
+                r.Name == res.Name &&
+                r.Surname == res.Surname &&
+                r.DateOfBirth == res.DateOfBirth &&
+                r.EMail == res.EMail &&
+                r.PersonalCode == res.PersonalCode);
         }
     }
 }

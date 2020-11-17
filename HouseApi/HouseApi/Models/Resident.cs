@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Text.Json.Serialization;
 
 namespace HouseApi.Models
 {
@@ -15,6 +13,7 @@ namespace HouseApi.Models
         public long PhoneNumber { get; set; }
         public string EMail { get; set; }
         public int FlatId { get; set; }
-        public virtual Flat Flat{ get; set; }
+        [JsonIgnore]
+        public virtual Flat Flat { get; set; }
     }
 }
